@@ -37,11 +37,20 @@ impl Game {
     fn display_state(&self) {
         println!("Lives: {}", self.lives);
         println!("Guesses: {:?}", self.guesses);
+        let partial_word: String = self.secret_word.chars().map(|c| {
+            if self.guesses.contains(&c) {
+                c
+            } else {
+                '_'
+            }
+        }).collect();
+        println!("Can you guess the word? : {}", partial_word);
     }
 }
 
 fn generate_secret_word() -> String {
     String::from("hello")
+    // "hello".to_owned()
 }
 
 fn read_char() -> Option<char> {
@@ -55,40 +64,34 @@ fn read_char() -> Option<char> {
 }
 
 fn handle_guess_result(game: &mut Game, letter: char, guess_result: Option<bool>) {
-    match guess_result {
-        Some(is_correct) => {
-            game.guesses.insert(letter);
-            if is_correct {
-                println!("Correct!");
-                if game.secret_word_set.is_subset(&game.guesses) {
-                    game.is_completed = true;
-                    println!("Bob wins!");
-                }
-            } else {
-                game.lives -= 1;
-                println!("Incorrect!");
-                if game.lives == 0 {
-                    game.is_completed = true;
-                    println!("Bob loses!");
-                }
+    if let Some(is_correct) = guess_result {
+        game.guesses.insert(letter);
+        if is_correct {
+            println!("Correct!");
+            if game.secret_word_set.is_subset(&game.guesses) {
+                game.is_completed = true;
+                println!("Bob wins!");
             }
-        },
-        None => {
-            println!("You already guessed that!");
-        },
+        } else {
+            game.lives -= 1;
+            println!("Incorrect!");
+            if game.lives < 1 {
+                game.is_completed = true;
+                println!("Bob loses!");
+            }
+        }
+    } else {
+        println!("You already guessed that!");
     }
     game.display_state();
 }
 
 fn handle_user_input(game: &mut Game, bob_guess: Option<char>) {
-    match bob_guess {
-        Some(letter) => {
-            let guess_result: Option<bool> = game.check_guess(&letter);
-            handle_guess_result(game, letter, guess_result);
-        },
-        None => {
-            println!("Please enter a character!");
-        },
+    if let Some(letter) = bob_guess {
+        let guess_result: Option<bool> = game.check_guess(&letter);
+        handle_guess_result(game, letter, guess_result);
+    } else {
+        println!("Please enter a character!");
     }
 }
 
