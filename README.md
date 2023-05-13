@@ -106,6 +106,34 @@ fn main() {
     };
 }
 ```
+or
+```
+fn main() {
+    let ints = [1, 2, 3, 4, 5];
+    let slice = &ints;
+    
+    let maybe_last = slice.get(5);
+    if let Some(last) = maybe_last {
+        last.unwrap()
+    } else {
+        -1
+    };
+}
+```
+or
+```
+fn main() {
+    let ints = [1, 2, 3, 4, 5];
+    let slice = &ints;
+    
+    let maybe_last = slice.get(5);
+    match maybe_last {
+        Some(last) => *maybe_last.unwrap()
+        None => -1
+    };
+}
+```
+
 which can be expressed as
 ```
 fn main() {
@@ -114,6 +142,53 @@ fn main() {
     let last = *slice.get(5).unwrap_or(&-1);
 }
 ```
+safe unwrap with `unwrap_or()`
+```
+let value = some_option.unwrap_or(default_value);
+```
+
+
+# `Result<T, E>` type
+```
+enum MathError {
+    DivisionByZero
+} 
+
+fn divide(a: i32, b: i32) -> Result<i32, MathError> {
+    if b == 0 {
+        Err(MathError::DivisionByZero)
+    }
+    Ok(a / b)
+}
+
+fn main() -> Result<(), MathError> {
+    let first_result = divide(10, 2)?;
+    let second_result = divide(1, 0)?;
+    println!("{}", first_result)
+    println!("{}", second_result)
+
+    Ok(())
+}
+```
+the `?` operator propagates errors up the stack
+```
+use std::fs::File;
+use std::io::{self, Read};
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut username = String::new();
+
+    File::open("hello.txt")?.read_to_string(&mut username)?;
+
+    Ok(username)
+}
+```
+use `ok_or()` to wrap error values and return `Err(err)`
+converts a `Result<T, E>` into a `Result<T, F>`, where `F` is the type of the provided error (err) argument
+```
+let new_result = result.ok_or(error_value);
+```
+
 
 ### vectors
 ```
